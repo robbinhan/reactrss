@@ -1,0 +1,46 @@
+:root {
+  margin: 0 auto;
+  text-align: center;
+}
+
+
+input {
+    border-color: #3498db;
+    border-width: 0.25rem;
+    height: 2rem;
+    width: 10rem;
+}
+
+.reader-div {
+    text-align: center;
+    border-width: 0.1rem;
+    width: 90%;
+    margin-left: 10%;
+}
+
+button {
+ background: #3498db;
+  background-image: linear-gradient(to bottom, #3498db, #2980b9);
+  border-radius: 28px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 20px;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+}
+
+button:hover {
+  background: #3cb0fd;
+  background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
+  text-decoration: none;
+}
+
+
+.rss-div {
+  height: 800px;
+  overflow: scroll;
+  max-width: 10%;
+  float: left;
+  position: fixed;
+}
+
