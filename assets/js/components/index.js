@@ -14,12 +14,16 @@ export default class UserBox extends Component {
     console.log(this.props)
     return (
       <div>
-            <h1>ReactRss</h1>
-            <RssForm url={this.props.url} 
-                handlerSubmit={this.props.handlerSubmit}   
-                handlerChange={this.props.handlerChange} />
-            <RssDiv feedsList={this.props.feedsList} initFeedsList={this.props.initFeedsList} handlerClick={this.props.handlerClick} />
-            <ReaderDiv items={this.props.items} isFetching={this.props.isFetching} error={this.props.error}/>
+            <div className="header">
+                  <h1>ReactRss</h1>
+                  <RssForm url={this.props.url} 
+                      handlerSubmit={this.props.handlerSubmit}   
+                      handlerChange={this.props.handlerChange} />
+            </div>
+            <div  className="container">
+                <RssDiv feedsList={this.props.feedsList} initFeedsList={this.props.initFeedsList} handlerClick={this.props.handlerClick} url={this.props.url} flag={this.props.flag}/>
+                <ReaderDiv items={this.props.items} isFetching={this.props.isFetching} error={this.props.error}/>
+            </div>
       </div>
     );
   }

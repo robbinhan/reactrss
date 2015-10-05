@@ -3,7 +3,8 @@ var gulp = require('gulp'),
     browserSync = require('browser-sync').create(),
     source = require('vinyl-source-stream'),
     autoprefixer = require('autoprefixer'),
-    postcss = require('gulp-postcss');
+    postcss = require('gulp-postcss'),
+    cssnext = require("gulp-cssnext");
 
 
 
@@ -25,7 +26,7 @@ gulp.task('css', function () {
     autoprefixer({browsers: ['last 2 version']}),
   ];
   gulp.src('./assets/css/*.css')
-    .pipe(postcss(processors))
+    .pipe(cssnext())
     .pipe(gulp.dest('./public/css/'));
 
   browserSync.reload();
@@ -33,11 +34,12 @@ gulp.task('css', function () {
 
 // Static server
 gulp.task('serve', function() {
-    browserSync.init({
+
+      browserSync.init({
         server: {
             baseDir: "./"
         }
-    });
+      });
 
     gulp.watch("assets/js/*",["build-jsx"]);
     gulp.watch("assets/css/*",["css"]);

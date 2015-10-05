@@ -8,9 +8,9 @@ export default class ReaderDiv extends Component {
     
     let row = self.props.items.map(function (entry,index) {
        return (
-            <div key={index}>
+            <div key={index} className="typo">
                   <h2><a href={entry.link} target="_blank">{entry.title}</a></h2>
-                  <div dangerouslySetInnerHTML={{__html: entry.content}} ></div>
+                  <article dangerouslySetInnerHTML={{__html: entry.content}} ></article>
             </div>
       )
     })

@@ -1,7 +1,9 @@
 import axios from 'axios';
 import localforage from 'localforage';
+import _ from 'lodash'
 
 const subFeedsListStorageKey = 'robbinhan_feeds_lists'
+const lastestEntryStorageKey = 'robbinhan_feeds_last_entry'
 /*
  * action types
  */
@@ -12,11 +14,12 @@ export function showGistsRequest (url) {
 	}
 }
 
-export function showGistsSuccess (url,json) {
+export function showGistsSuccess (url,json,flag) {
 	return {
 		type: 'SHOW_GISTS_SUCCESS',
 		url,
-		json
+		json,
+            flag
 	}
 }
 
@@ -54,11 +57,39 @@ export function fetchFeed(url) {
 
       dispatch(showGistsRequest(url));
 
-      axios.get('http://127.0.0.1:8000/feed?url='+url).then((rep) => {
+      axios.get('http://localhost:8000/feed?url='+url).then((rep) => {
             console.log(rep.data);
-            let feed = rep.data.responseData.feed.entries;
-            console.log(feed)
-            dispatch(showGistsSuccess(url,feed))
+            let feeds = rep.data.responseData.feed.entries;
+            console.log(feeds)
+
+            localforage.getItem(lastestEntryStorageKey).then((urls,err) => {
+                  console.log(urls,err)
+                  let flag = 0;
+                  if (urls) {
+                  //       urls = JSON.parse(urls)
+                  //       oldHash = urls.url
+                  //       for (va [index, feed] of feeds) {
+                  //             let hash = md5(feed.title)
+                  //             if (oldHash === hash) {
+                  //                   flag = index;
+                  //                   urls.url = hash;
+                  //                   break;
+                  //             }
+                  //       } 
+
+                  //       feeds.map((feed,index) => {
+                              
+                  //       })
+                  } else {
+                        let hash = md5(feeds[0].title)
+                        console.log('hash',hash)
+                        urls = {url:hash}
+                  }
+
+                  // localforage.setItem(lastestEntryStorageKey,JSON.stringify(urls));
+
+                  dispatch(showGistsSuccess(url, feeds, flag))
+            })
       }).catch((e) => console.error(e))
   };
 }
@@ -66,7 +97,7 @@ export function fetchFeed(url) {
 
 export function subFeeds(url) {
       return function (dispatch) {
-            axios.get('http://127.0.0.1:8000/feed?url='+url).then((rep) => {
+            axios.get('http://localhost:8000/feed?url='+url).then((rep) => {
                   console.log(rep.data);
                   let feed = rep.data.responseData.feed;
                   var feedObject = {title:feed.title,feedUrl:feed.feedUrl,link:feed.link,author:feed.author}
@@ -77,8 +108,15 @@ export function subFeeds(url) {
                         if (listString) {
                               list = JSON.parse(listString);
                         }
-                        list.push(feedObject);
-                        localforage.setItem(subFeedsListStorageKey,JSON.stringify(list));
+                        //判断是否已经存在URL
+                        let findIndex = _.findIndex(list, function(feed) {
+                          return feed.feedUrl == url;
+                        });
+                         if (findIndex == -1) {
+                              list.push(feedObject);
+                              localforage.setItem(subFeedsListStorageKey,JSON.stringify(list));
+                        }
+                        
                         dispatch(subFeedsUrlSucces(list))
                   });
                   // dispatch(showGistsSuccess(url,feed.entries))

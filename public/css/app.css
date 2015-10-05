@@ -3,24 +3,18 @@
   text-align: center;
 }
 
-
 input {
     border-color: #3498db;
+    border-width: 4px;
     border-width: 0.25rem;
+    height: 32px;
     height: 2rem;
+    width: 160px;
     width: 10rem;
-}
-
-.reader-div {
-    text-align: center;
-    border-width: 0.1rem;
-    width: 90%;
-    margin-left: 10%;
 }
 
 button {
  background: #3498db;
-  background-image: linear-gradient(to bottom, #3498db, #2980b9);
   border-radius: 28px;
   font-family: Arial;
   color: #ffffff;
@@ -31,16 +25,54 @@ button {
 
 button:hover {
   background: #3cb0fd;
-  background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
   text-decoration: none;
 }
 
-
 .rss-div {
-  height: 800px;
-  overflow: scroll;
-  max-width: 10%;
-  float: left;
-  position: fixed;
+      max-width: 10%;
+      min-width: 10%;
+      height: auto;
+      float: left;
+      position: fixed;
+      background-image: url('../img/bg.jpg');
 }
 
+.reader-div {
+    margin-left: 10%;
+    width: auto;
+    background-image: url('../img/bg.png');
+}
+
+.container {
+  
+}
+
+.rss-div div {
+  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.rss-div div.active {
+  background-color: #457324;
+}
+
+.rss-div div:hover {
+  cursor: pointer;
+}
+
+.reader-div div {
+  font-size: 17px;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  /*text-align: center;*/
+}
+
+@media (max-width: 640px) {
+    .reader-div {
+      margin-left: 18%;
+    }
+}
+
+.header {
+  /*text-align: center;*/
+}

@@ -18,7 +18,9 @@ function gets(state = {
   case 'SHOW_GISTS_SUCCESS':
   	return Object.assign({}, state, {
       isFetching: false,
-      items: action.json
+      items: action.json,
+      url: action.url,
+      flag: action.flag
     });
   case 'SHOW_GISTS_FAIL':
   	return Object.assign({}, state, {
