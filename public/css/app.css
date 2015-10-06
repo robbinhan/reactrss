@@ -29,16 +29,17 @@ button:hover {
 }
 
 .rss-div {
-      max-width: 10%;
+      max-width: 15%;
       min-width: 10%;
-      height: auto;
+      height: 80%;
+      overflow: scroll;
       float: left;
       position: fixed;
       background-image: url('../img/bg.jpg');
 }
 
 .reader-div {
-    margin-left: 10%;
+    margin-left: 15%;
     width: auto;
     background-image: url('../img/bg.png');
 }
