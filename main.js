@@ -29,9 +29,9 @@ http.createServer(function (req, res) {
                   res.end(feeds);
             }
          })
-}).listen(8000);
+}).listen(9222);
 
-console.log('Server running on port 8000.');
+console.log('Server running on port 9222.');
 
 
 function parseFeed (q,num,callback) {
