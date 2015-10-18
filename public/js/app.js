@@ -2,13 +2,16 @@
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
-      value: true
+    value: true
 });
 exports.showGistsRequest = showGistsRequest;
 exports.showGistsSuccess = showGistsSuccess;
 exports.showGistsFail = showGistsFail;
 exports.changeUrl = changeUrl;
+exports.rightClickFeed = rightClickFeed;
 exports.subFeedsUrlSucces = subFeedsUrlSucces;
+exports.cancelFeedsUrlSucces = cancelFeedsUrlSucces;
+exports.cancelSubFeed = cancelSubFeed;
 exports.fetchFeed = fetchFeed;
 exports.subFeeds = subFeeds;
 exports.getFeedsLists = getFeedsLists;
@@ -34,41 +37,80 @@ var lastestEntryStorageKey = 'robbinhan_feeds_last_entry';
  */
 
 function showGistsRequest(url) {
-      return {
-            type: 'SHOW_GISTS_REQUEST',
-            url: url
-      };
+    return {
+        type: 'SHOW_GISTS_REQUEST',
+        url: url
+    };
 }
 
 function showGistsSuccess(url, json, flag) {
-      return {
-            type: 'SHOW_GISTS_SUCCESS',
-            url: url,
-            json: json,
-            flag: flag
-      };
+    return {
+        type: 'SHOW_GISTS_SUCCESS',
+        url: url,
+        json: json,
+        flag: flag
+    };
 }
 
 function showGistsFail(url, json) {
-      return {
-            type: 'SHOW_GISTS_FAIL',
-            url: url,
-            error: json.statusText
-      };
+    return {
+        type: 'SHOW_GISTS_FAIL',
+        url: url,
+        error: json.statusText
+    };
 }
 
 function changeUrl(url) {
-      return {
-            type: 'CHANGE_URL',
-            url: url
-      };
+    return {
+        type: 'CHANGE_URL',
+        url: url
+    };
+}
+
+function rightClickFeed(url, e) {
+    return {
+        type: 'RIGHT_CLICK_FEED',
+        url: url,
+        e: e
+    };
 }
 
 function subFeedsUrlSucces(feedsList) {
-      return {
-            type: 'SUB_FEEDS_URL_SUCCESS',
-            feedsList: feedsList
-      };
+    return {
+        type: 'SUB_FEEDS_URL_SUCCESS',
+        feedsList: feedsList
+    };
+}
+
+function cancelFeedsUrlSucces(feedsList, evens) {
+    return {
+        type: 'CANCEL_FEEDS_URL_SUCCESS',
+        feedsList: feedsList,
+        evens: evens
+    };
+}
+
+function cancelSubFeed(url) {
+
+    return function (dispatch) {
+
+        _localforage2['default'].getItem(subFeedsListStorageKey).then(function (listString, err) {
+            var list = [];
+            if (listString) {
+                list = JSON.parse(listString);
+            }
+            //删除取消订阅的URL
+            var evens = _lodash2['default'].remove(list, function (feed) {
+                return feed.feedUrl == url;
+            });
+
+            _localforage2['default'].setItem(subFeedsListStorageKey, JSON.stringify(list));
+
+            console.log("remove feed", evens, list);
+
+            dispatch(cancelFeedsUrlSucces(list, evens));
+        });
+    };
 }
 
 // 来看一下我们写的第一个 thunk action creator！
@@ -77,92 +119,149 @@ function subFeedsUrlSucces(feedsList) {
 
 function fetchFeed(url) {
 
-      return function (dispatch) {
+    return function (dispatch) {
 
-            dispatch(showGistsRequest(url));
+        dispatch(showGistsRequest(url));
 
-            _axios2['default'].get('http://localhost:9222/feed?url=' + url).then(function (rep) {
-                  console.log(rep.data);
-                  var feeds = rep.data.responseData.feed.entries;
-                  console.log(feeds);
+        _axios2['default'].get('http://localhost:9222/feed?url=' + url).then(function (rep) {
+            console.log(rep.data);
+            var feeds = rep.data.responseData.feed.entries;
+            console.log(feeds);
 
-                  _localforage2['default'].getItem(lastestEntryStorageKey).then(function (urls, err) {
-                        console.log(urls, err);
-                        var flag = 0;
-                        if (urls) {
-                              //       urls = JSON.parse(urls)
-                              //       oldHash = urls.url
-                              //       for (va [index, feed] of feeds) {
-                              //             let hash = md5(feed.title)
-                              //             if (oldHash === hash) {
-                              //                   flag = index;
-                              //                   urls.url = hash;
-                              //                   break;
-                              //             }
-                              //       }
+            _localforage2['default'].getItem(lastestEntryStorageKey).then(function (urls, err) {
+                console.log(urls, err);
+                var flag = 0;
+                if (urls) {
+                    //       urls = JSON.parse(urls)
+                    //       oldHash = urls.url
+                    //       for (va [index, feed] of feeds) {
+                    //             let hash = md5(feed.title)
+                    //             if (oldHash === hash) {
+                    //                   flag = index;
+                    //                   urls.url = hash;
+                    //                   break;
+                    //             }
+                    //       }
 
-                              //       feeds.map((feed,index) => {
+                    //       feeds.map((feed,index) => {
 
-                              //       })
-                        } else {
-                                    var hash = md5(feeds[0].title);
-                                    console.log('hash', hash);
-                                    urls = { url: hash };
-                              }
+                    //       })
+                } else {
+                        var hash = md5(feeds[0].title);
+                        console.log('hash', hash);
+                        urls = { url: hash };
+                    }
 
-                        // localforage.setItem(lastestEntryStorageKey,JSON.stringify(urls));
+                // localforage.setItem(lastestEntryStorageKey,JSON.stringify(urls));
 
-                        dispatch(showGistsSuccess(url, feeds, flag));
-                  });
-            })['catch'](function (e) {
-                  return console.error(e);
+                dispatch(showGistsSuccess(url, feeds, flag));
             });
-      };
+        })['catch'](function (e) {
+            return console.error(e);
+        });
+    };
 }
 
 function subFeeds(url) {
-      return function (dispatch) {
-            _axios2['default'].get('http://localhost:9222/feed?url=' + url).then(function (rep) {
-                  console.log(rep.data);
-                  var feed = rep.data.responseData.feed;
-                  var feedObject = { title: feed.title, feedUrl: feed.feedUrl, link: feed.link, author: feed.author };
-                  console.log(feed);
+    return function (dispatch) {
+        _axios2['default'].get('http://localhost:9222/feed?url=' + url).then(function (rep) {
+            console.log(rep.data);
+            var feed = rep.data.responseData.feed;
+            var feedObject = { title: feed.title, feedUrl: feed.feedUrl, link: feed.link, author: feed.author };
+            console.log(feed);
 
-                  _localforage2['default'].getItem(subFeedsListStorageKey).then(function (listString, err) {
-                        var list = [];
-                        if (listString) {
-                              list = JSON.parse(listString);
-                        }
-                        //判断是否已经存在URL
-                        var findIndex = _lodash2['default'].findIndex(list, function (feed) {
-                              return feed.feedUrl == url;
-                        });
-                        if (findIndex == -1) {
-                              list.push(feedObject);
-                              _localforage2['default'].setItem(subFeedsListStorageKey, JSON.stringify(list));
-                        }
+            _localforage2['default'].getItem(subFeedsListStorageKey).then(function (listString, err) {
+                var list = [];
+                if (listString) {
+                    list = JSON.parse(listString);
+                }
+                //判断是否已经存在URL
+                var findIndex = _lodash2['default'].findIndex(list, function (feed) {
+                    return feed.feedUrl == url;
+                });
+                if (findIndex == -1) {
+                    list.push(feedObject);
+                    _localforage2['default'].setItem(subFeedsListStorageKey, JSON.stringify(list));
+                }
 
-                        dispatch(subFeedsUrlSucces(list));
-                  });
-                  // dispatch(showGistsSuccess(url,feed.entries))
-            })['catch'](function (e) {
-                  return console.error(e);
+                dispatch(subFeedsUrlSucces(list));
             });
-      };
+            // dispatch(showGistsSuccess(url,feed.entries))
+        })['catch'](function (e) {
+            return console.error(e);
+        });
+    };
 }
 
 function getFeedsLists() {
-      return function (dispatch) {
-            console.log('after call init');
-            _localforage2['default'].getItem(subFeedsListStorageKey).then(function (list, err) {
-                  list = JSON.parse(list);
-                  console.log('json parse', list);
-                  dispatch(subFeedsUrlSucces(list));
-            });
-      };
+    return function (dispatch) {
+        console.log('after call init');
+        _localforage2['default'].getItem(subFeedsListStorageKey).then(function (list, err) {
+            list = JSON.parse(list);
+            console.log('json parse', list);
+            dispatch(subFeedsUrlSucces(list));
+        });
+    };
 }
 
 },{"axios":11,"localforage":31,"lodash":33}],2:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+    value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var Menu = (function (_Component) {
+    _inherits(Menu, _Component);
+
+    function Menu(props) {
+        _classCallCheck(this, Menu);
+
+        _get(Object.getPrototypeOf(Menu.prototype), 'constructor', this).call(this, props);
+    }
+
+    _createClass(Menu, [{
+        key: 'render',
+        value: function render() {
+            var _this = this;
+
+            return _react2['default'].createElement(
+                'div',
+                { className: 'right-menu', style: { left: this.props.x + 'px', top: this.props.y + 'px' } },
+                _react2['default'].createElement(
+                    'span',
+                    {
+                        onClick: function (e) {
+                            e.preventDefault();_this.props.cancelSubFeed(_this.props.currentFeedUrl);
+                        }
+                    },
+                    '取消订阅'
+                )
+            );
+        }
+    }]);
+
+    return Menu;
+})(_react.Component);
+
+exports['default'] = Menu;
+module.exports = exports['default'];
+
+},{"react":198}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -236,88 +335,11 @@ var ReaderDiv = (function (_Component) {
 exports["default"] = ReaderDiv;
 module.exports = exports["default"];
 
-},{"react":198}],3:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require('react');
-
-var _react2 = _interopRequireDefault(_react);
-
-var RightMenu = (function (_Component) {
-  _inherits(RightMenu, _Component);
-
-  function RightMenu() {
-    _classCallCheck(this, RightMenu);
-
-    _get(Object.getPrototypeOf(RightMenu.prototype), 'constructor', this).apply(this, arguments);
-  }
-
-  _createClass(RightMenu, [{
-    key: 'render',
-    value: function render() {
-      //Uncaught Error: Invariant Violation: The `style` prop expects a mapping from style properties to values, not a string. For example, style={{marginRight: spacing + 'em'}} when using JSX.
-      return _react2['default'].createElement(
-        'div',
-        null,
-        _react2['default'].createElement(
-          'button',
-          null,
-          '取消订阅'
-        ),
-        _react2['default'].createElement(
-          'button',
-          null,
-          '取消订阅'
-        ),
-        _react2['default'].createElement(
-          'button',
-          null,
-          '取消订阅'
-        ),
-        _react2['default'].createElement(
-          'button',
-          null,
-          '取消订阅'
-        ),
-        _react2['default'].createElement(
-          'button',
-          null,
-          '取消订阅'
-        ),
-        _react2['default'].createElement(
-          'button',
-          null,
-          '取消订阅'
-        )
-      );
-    }
-  }]);
-
-  return RightMenu;
-})(_react.Component);
-
-exports['default'] = RightMenu;
-module.exports = exports['default'];
-
 },{"react":198}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
-  value: true
+    value: true
 });
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -334,71 +356,59 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _RightMenu = require('./RightMenu');
-
-var _RightMenu2 = _interopRequireDefault(_RightMenu);
-
 var RssDiv = (function (_Component) {
-  _inherits(RssDiv, _Component);
+    _inherits(RssDiv, _Component);
 
-  function RssDiv(props) {
-    _classCallCheck(this, RssDiv);
+    function RssDiv(props) {
+        _classCallCheck(this, RssDiv);
 
-    _get(Object.getPrototypeOf(RssDiv.prototype), 'constructor', this).call(this, props);
-    this.props.initFeedsList();
-    this.state = { display: false };
-  }
-
-  _createClass(RssDiv, [{
-    key: 'rightClick',
-    value: function rightClick(e) {
-      e.preventDefault();
-      console.log("click right");
-      this.state.display = true;
-      this.forceUpdate();
+        _get(Object.getPrototypeOf(RssDiv.prototype), 'constructor', this).call(this, props);
+        this.props.initFeedsList();
     }
-  }, {
-    key: 'render',
-    value: function render() {
-      var self = this;
-      var row = self.props.feedsList.map(function (feed, index) {
-        var cssName = self.props.url == feed.feedUrl ? 'active' : '';
-        return _react2['default'].createElement(
-          'div',
-          { key: index, className: cssName },
-          _react2['default'].createElement(
-            'span',
-            {
-              onClick: function (e) {
-                e.preventDefault();self.props.handlerClick(feed.feedUrl);
-              },
-              onContextMenu: self.rightClick },
-            feed.title
-          ),
-          _react2['default'].createElement(
-            'span',
-            null,
-            self.props.flag
-          )
-        );
-      });
 
-      return _react2['default'].createElement(
-        'div',
-        { className: 'rss-div' },
-        row,
-        this.state.display ? _react2['default'].createElement(_RightMenu2['default'], null) : null
-      );
-    }
-  }]);
+    _createClass(RssDiv, [{
+        key: 'render',
+        value: function render() {
+            var self = this;
+            var row = self.props.feedsList.map(function (feed, index) {
+                var cssName = self.props.url == feed.feedUrl ? 'active' : '';
+                return _react2['default'].createElement(
+                    'div',
+                    { key: index, className: cssName,
+                        onClick: function (e) {
+                            e.preventDefault();self.props.handlerClick(feed.feedUrl);
+                        },
+                        onContextMenu: function (e) {
+                            e.preventDefault();self.props.handlerRightClick(feed.feedUrl, e);
+                        } },
+                    _react2['default'].createElement(
+                        'span',
+                        null,
+                        feed.title
+                    ),
+                    _react2['default'].createElement(
+                        'span',
+                        null,
+                        self.props.flag
+                    )
+                );
+            });
 
-  return RssDiv;
+            return _react2['default'].createElement(
+                'div',
+                { className: 'rss-div' },
+                row
+            );
+        }
+    }]);
+
+    return RssDiv;
 })(_react.Component);
 
 exports['default'] = RssDiv;
 module.exports = exports['default'];
 
-},{"./RightMenu":3,"react":198}],5:[function(require,module,exports){
+},{"react":198}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -462,7 +472,7 @@ module.exports = exports['default'];
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
-  value: true
+    value: true
 });
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -493,56 +503,64 @@ var _ReaderDiv2 = _interopRequireDefault(_ReaderDiv);
 
 var _actionsUser = require('../actions/user');
 
+var _Menu = require('./Menu');
+
+var _Menu2 = _interopRequireDefault(_Menu);
+
 var UserBox = (function (_Component) {
-  _inherits(UserBox, _Component);
+    _inherits(UserBox, _Component);
 
-  function UserBox(props) {
-    _classCallCheck(this, UserBox);
+    function UserBox(props) {
+        _classCallCheck(this, UserBox);
 
-    _get(Object.getPrototypeOf(UserBox.prototype), 'constructor', this).call(this, props);
-  }
-
-  _createClass(UserBox, [{
-    key: 'render',
-    value: function render() {
-      console.log('call once');
-      console.log(this.props);
-      return _react2['default'].createElement(
-        'div',
-        null,
-        _react2['default'].createElement(
-          'div',
-          { className: 'header' },
-          _react2['default'].createElement(
-            'h1',
-            null,
-            'ReactRss'
-          ),
-          _react2['default'].createElement(_RssForm2['default'], { url: this.props.url,
-            handlerSubmit: this.props.handlerSubmit,
-            handlerChange: this.props.handlerChange })
-        ),
-        _react2['default'].createElement(
-          'div',
-          { className: 'container' },
-          _react2['default'].createElement(_RssDiv2['default'], { feedsList: this.props.feedsList, initFeedsList: this.props.initFeedsList, handlerClick: this.props.handlerClick, url: this.props.url, flag: this.props.flag }),
-          _react2['default'].createElement(_ReaderDiv2['default'], { items: this.props.items, isFetching: this.props.isFetching, error: this.props.error })
-        )
-      );
+        _get(Object.getPrototypeOf(UserBox.prototype), 'constructor', this).call(this, props);
     }
-  }]);
 
-  return UserBox;
+    _createClass(UserBox, [{
+        key: 'render',
+        value: function render() {
+            console.log('call once');
+            console.log(this.props);
+            return _react2['default'].createElement(
+                'div',
+                null,
+                _react2['default'].createElement(
+                    'div',
+                    { className: 'header' },
+                    _react2['default'].createElement(
+                        'h1',
+                        null,
+                        'ReactRss'
+                    ),
+                    _react2['default'].createElement(_RssForm2['default'], { url: this.props.url,
+                        handlerSubmit: this.props.handlerSubmit,
+                        handlerChange: this.props.handlerChange })
+                ),
+                _react2['default'].createElement(
+                    'div',
+                    { className: 'container' },
+                    _react2['default'].createElement(_RssDiv2['default'], { feedsList: this.props.feedsList, initFeedsList: this.props.initFeedsList,
+                        handlerClick: this.props.handlerClick, url: this.props.url, flag: this.props.flag,
+                        handlerRightClick: this.props.handlerRightClick }),
+                    _react2['default'].createElement(_ReaderDiv2['default'], { items: this.props.items, isFetching: this.props.isFetching, error: this.props.error })
+                ),
+                this.props.displayMenu ? _react2['default'].createElement(_Menu2['default'], { x: this.props.menuX, y: this.props.menuY, cancelSubFeed: this.props.cancelSubFeed,
+                    currentFeedUrl: this.props.currentFeedUrl }) : null
+            );
+        }
+    }]);
+
+    return UserBox;
 })(_react.Component);
 
 exports['default'] = UserBox;
 module.exports = exports['default'];
 
-},{"../actions/user":1,"./ReaderDiv":2,"./RssDiv":4,"./RssForm":5,"react":198}],7:[function(require,module,exports){
+},{"../actions/user":1,"./Menu":2,"./ReaderDiv":3,"./RssDiv":4,"./RssForm":5,"react":198}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
-  value: true
+    value: true
 });
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -558,33 +576,43 @@ var _componentsIndex2 = _interopRequireDefault(_componentsIndex);
 // Which part of the Redux global state does our component want to receive as props?
 // 给子组件的props对象定义数据
 function mapStateToProps(state) {
-  console.log('connet state', state);
-  return {
-    url: state.feeds.url,
-    items: state.feeds.items || [],
-    isFetching: state.feeds.isFetching,
-    error: state.feeds.error,
-    feedsList: state.feeds.feedsList,
-    flag: state.feeds.flag || 0
-  };
+    console.log('connet state', state);
+    return {
+        url: state.feeds.url,
+        items: state.feeds.items || [],
+        isFetching: state.feeds.isFetching,
+        error: state.feeds.error,
+        feedsList: state.feeds.feedsList,
+        flag: state.feeds.flag || 0,
+        menuX: state.feeds.menuX || 0,
+        menuY: state.feeds.menuY || 0,
+        displayMenu: state.feeds.displayMenu || false,
+        currentFeedUrl: state.feeds.currentFeedUrl || null
+    };
 }
 
 // Which action creators does it want to receive by props?
 function mapDispatchToProps(dispatch, ownProps) {
-  return {
-    handlerSubmit: function handlerSubmit(url) {
-      return dispatch((0, _actionsUser.subFeeds)(url));
-    },
-    handlerChange: function handlerChange(url) {
-      return dispatch((0, _actionsUser.changeUrl)(url));
-    },
-    handlerClick: function handlerClick(url) {
-      return dispatch((0, _actionsUser.fetchFeed)(url));
-    },
-    initFeedsList: function initFeedsList() {
-      return dispatch((0, _actionsUser.getFeedsLists)());
-    }
-  };
+    return {
+        handlerSubmit: function handlerSubmit(url) {
+            return dispatch((0, _actionsUser.subFeeds)(url));
+        },
+        handlerChange: function handlerChange(url) {
+            return dispatch((0, _actionsUser.changeUrl)(url));
+        },
+        handlerClick: function handlerClick(url) {
+            return dispatch((0, _actionsUser.fetchFeed)(url));
+        },
+        initFeedsList: function initFeedsList() {
+            return dispatch((0, _actionsUser.getFeedsLists)());
+        },
+        handlerRightClick: function handlerRightClick(url, e) {
+            return dispatch((0, _actionsUser.rightClickFeed)(url, e));
+        },
+        cancelSubFeed: function cancelSubFeed(url) {
+            return dispatch((0, _actionsUser.cancelSubFeed)(url));
+        }
+    };
 }
 
 exports['default'] = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(_componentsIndex2['default']);
@@ -621,10 +649,8 @@ _reactDom2['default'].render(_react2['default'].createElement(_containersApp2['d
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
-  value: true
+    value: true
 });
-
-var _actionsUser = require('../actions/user');
 
 var _redux = require('redux');
 
@@ -634,63 +660,80 @@ var _redux = require('redux');
  * @param  {[type]} action [description]
  * @return {[type]}        [description]
  */
-function gets(state, action) {
-  if (state === undefined) state = {
-    isFetching: false,
-    items: []
-  };
+function gets() {
+    var state = arguments.length <= 0 || arguments[0] === undefined ? {
+        isFetching: false,
+        items: []
+    } : arguments[0];
+    var action = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-  switch (action.type) {
-    case 'SHOW_GISTS_REQUEST':
-      return Object.assign({}, state, {
-        isFetching: true
-      });
-    case 'SHOW_GISTS_SUCCESS':
-      return Object.assign({}, state, {
-        isFetching: false,
-        items: action.json,
-        url: action.url,
-        flag: action.flag
-      });
-    case 'SHOW_GISTS_FAIL':
-      return Object.assign({}, state, {
-        isFetching: false,
-        error: action.error
-      });
-    default:
-      return state;
-  }
+    switch (action.type) {
+        case 'SHOW_GISTS_REQUEST':
+            return Object.assign({}, state, {
+                isFetching: true
+            });
+        case 'SHOW_GISTS_SUCCESS':
+            return Object.assign({}, state, {
+                isFetching: false,
+                items: action.json,
+                url: action.url,
+                flag: action.flag,
+                displayMenu: false
+            });
+        case 'SHOW_GISTS_FAIL':
+            return Object.assign({}, state, {
+                isFetching: false,
+                error: action.error
+            });
+        default:
+            return state;
+    }
 }
 
-function getFeeds(state, action) {
-  if (state === undefined) state = { url: '', items: [], isFetching: false, error: null, feedsList: [] };
+function getFeeds() {
+    var state = arguments.length <= 0 || arguments[0] === undefined ? { url: '', items: [], isFetching: false, error: null, feedsList: [] } : arguments[0];
+    var action = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-  switch (action.type) {
-    case 'SHOW_GISTS_REQUEST':
-    case 'SHOW_GISTS_SUCCESS':
-    case 'SHOW_GISTS_FAIL':
-      return Object.assign({}, state, gets(state[action.url], action));
-    case 'CHANGE_URL':
-      return Object.assign({}, state, {
-        url: action.url
-      });
-    case 'SUB_FEEDS_URL_SUCCESS':
-      return Object.assign({}, state, {
-        feedsList: action.feedsList
-      });
-    default:
-      return state;
-  }
+    switch (action.type) {
+        case 'SHOW_GISTS_REQUEST':
+        case 'SHOW_GISTS_SUCCESS':
+        case 'SHOW_GISTS_FAIL':
+            return Object.assign({}, state, gets(state[action.url], action));
+        case 'CHANGE_URL':
+            return Object.assign({}, state, {
+                url: action.url
+            });
+        case 'CANCEL_FEEDS_URL_SUCCESS':
+            console.log('CANCEL_FEEDS_URL_SUCCESS');
+            return Object.assign({}, state, {
+                feedsList: action.feedsList,
+                cancelFeed: action.evens,
+                displayMenu: false
+            });
+        case 'SUB_FEEDS_URL_SUCCESS':
+            return Object.assign({}, state, {
+                feedsList: action.feedsList
+            });
+        case 'RIGHT_CLICK_FEED':
+            return Object.assign({}, state, {
+                menuX: action.e.clientX,
+                menuY: action.e.clientY,
+                displayMenu: true,
+                currentFeedUrl: action.url
+            });
+        default:
+            return state;
+    }
 }
 
 var feedReducer = (0, _redux.combineReducers)({
-  feeds: getFeeds
+    feeds: getFeeds
 });
 
 exports['default'] = feedReducer;
 module.exports = exports['default'];
 
-},{"../actions/user":1,"redux":203}],10:[function(require,module,exports){
+},{"redux":203}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {

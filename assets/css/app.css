@@ -1,6 +1,9 @@
-:root {
-  margin: 0 auto;
-  text-align: center;
+
+body {
+
+    margin: 0;
+    padding: 0;
+    height: 100%;
 }
 
 input {
@@ -11,66 +14,76 @@ input {
 }
 
 button {
- background: #3498db;
-  border-radius: 28px;
-  font-family: Arial;
-  color: #ffffff;
-  font-size: 20px;
-  padding: 10px 20px 10px 20px;
-  text-decoration: none;
+    background: #3498db;
+    border-radius: 28px;
+    font-family: Arial;
+    color: #ffffff;
+    font-size: 20px;
+    padding: 10px 20px 10px 20px;
+    text-decoration: none;
 }
 
 button:hover {
-  background: #3cb0fd;
-  text-decoration: none;
+    background: #3cb0fd;
+    text-decoration: none;
 }
 
-@custom-media    --mobile (width <= 640px);
+@custom-media --mobile (width <= 640px);
+
+.header {
+    text-align: center;
+}
 
 .rss-div {
-      max-width: 15%;
-      min-width: 10%;
-      height: 80%;
-      overflow: scroll;
-      float: left;
-      position: fixed;
-      background-image: url('../img/bg.jpg');
-}
-
-.reader-div {
-    margin-left: 15%;
-    width: auto;
-    background-image: url('../img/bg.png');
+    max-width: 15%;
+    min-width: 10%;
+    margin-top: -3000px;
+    padding-top: 3000px;
+    float: left;
+    background-image: url('../img/bg.jpg');
 }
 
 .container {
-  
+
 }
 
 .rss-div div {
-  margin-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
-.rss-div div.active {
-  background-color: #457324;
+.rss-div div .active {
+    background-color: #457324;
 }
 
 .rss-div div:hover {
-  cursor: pointer;
+    cursor: pointer;
+}
+
+.right-menu {
+    position: absolute;
+}
+
+.right-menu span {
+    border: solid 1px;
+    background-color: #CCCCCC;
+    cursor: pointer;
+
+}
+
+.reader-div {
+    text-align: center;
+    margin-left: 15%;
+    background-image: url('../img/bg.png');
 }
 
 .reader-div div {
-  font-size: 1.1rem;
-  line-height: 1.5;
-  /*text-align: center;*/
+    font-size: 1.1rem;
+    line-height: 1.5;
+    /*text-align: center;*/
 }
 
 @media (--mobile) {
     .reader-div {
-      margin-left: 18%;
+        margin-left: 18%;
     }
-}
-
-.header {
-  /*text-align: center;*/
 }
