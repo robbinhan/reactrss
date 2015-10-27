@@ -87,7 +87,7 @@ http.createServer(function(req, res) {
          res.end(feeds);
       }
    })
-}).listen(9222);
+}).listen(5000);
 
 console.log('Server running on port 9222.');
 

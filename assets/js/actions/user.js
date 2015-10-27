@@ -98,7 +98,7 @@ export function fetchFeed(url) {
 
         dispatch(showGistsRequest(url));
 
-        axios.get('http://localhost:9222/feed?url=' + url).then((rep) => {
+        axios.get('http://localhost:5000/feed?url=' + url).then((rep) => {
             console.log(rep.data);
             let feeds = rep.data.responseData.feed.entries;
             console.log(feeds)
@@ -138,7 +138,7 @@ export function fetchFeed(url) {
 
 export function subFeeds(url) {
     return function (dispatch) {
-        axios.get('http://localhost:9222/feed?url=' + url).then((rep) => {
+        axios.get('http://localhost:5000/feed?url=' + url).then((rep) => {
             console.log(rep.data);
             let feed = rep.data.responseData.feed;
             var feedObject = {title: feed.title, feedUrl: feed.feedUrl, link: feed.link, author: feed.author}
