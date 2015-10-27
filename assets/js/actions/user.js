@@ -5,6 +5,7 @@ import _ from 'lodash'
 const subFeedsListStorageKey = 'robbinhan_feeds_lists'
 const lastestEntryStorageKey = 'robbinhan_feeds_last_entry'
 const requestAPI = "http://reactrss.robbinhan.aws-jp-1.goodrain.net:5000"
+
 /*
  * action types
  */
