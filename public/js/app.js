@@ -123,7 +123,7 @@ function fetchFeed(url) {
 
         dispatch(showGistsRequest(url));
 
-        _axios2['default'].get('http://localhost:9222/feed?url=' + url).then(function (rep) {
+        _axios2['default'].get('http://localhost:5000/feed?url=' + url).then(function (rep) {
             console.log(rep.data);
             var feeds = rep.data.responseData.feed.entries;
             console.log(feeds);
@@ -164,7 +164,7 @@ function fetchFeed(url) {
 
 function subFeeds(url) {
     return function (dispatch) {
-        _axios2['default'].get('http://localhost:9222/feed?url=' + url).then(function (rep) {
+        _axios2['default'].get('http://localhost:5000/feed?url=' + url).then(function (rep) {
             console.log(rep.data);
             var feed = rep.data.responseData.feed;
             var feedObject = { title: feed.title, feedUrl: feed.feedUrl, link: feed.link, author: feed.author };
