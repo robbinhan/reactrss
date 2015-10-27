@@ -4,7 +4,7 @@ import _ from 'lodash'
 
 const subFeedsListStorageKey = 'robbinhan_feeds_lists'
 const lastestEntryStorageKey = 'robbinhan_feeds_last_entry'
-const requestAPI = "http://reactrss.robbinhan.aws-jp-1.goodrain.net:5000"
+const requestAPI = "http://reactrss.robbinhan.aws-jp-1.goodrain.net"
 
 /*
  * action types
@@ -140,6 +140,7 @@ export function fetchFeed(url) {
 
 export function subFeeds(url) {
     return function (dispatch) {
+        console.log(requestAPI+'/feed?url=' + url);
         axios.get(requestAPI+'/feed?url=' + url).then((rep) => {
             console.log(rep.data);
             let feed = rep.data.responseData.feed;

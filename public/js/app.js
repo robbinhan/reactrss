@@ -32,7 +32,7 @@ var _lodash2 = _interopRequireDefault(_lodash);
 
 var subFeedsListStorageKey = 'robbinhan_feeds_lists';
 var lastestEntryStorageKey = 'robbinhan_feeds_last_entry';
-var requestAPI = "http://reactrss.robbinhan.aws-jp-1.goodrain.net:5000";
+var requestAPI = "http://reactrss.robbinhan.aws-jp-1.goodrain.net";
 
 /*
  * action types
@@ -166,6 +166,7 @@ function fetchFeed(url) {
 
 function subFeeds(url) {
     return function (dispatch) {
+        console.log(requestAPI + '/feed?url=' + url);
         _axios2['default'].get(requestAPI + '/feed?url=' + url).then(function (rep) {
             console.log(rep.data);
             var feed = rep.data.responseData.feed;
@@ -584,7 +585,7 @@ function mapStateToProps(state) {
         items: state.feeds.items || [],
         isFetching: state.feeds.isFetching,
         error: state.feeds.error,
-        feedsList: state.feeds.feedsList,
+        feedsList: state.feeds.feedsList || [],
         flag: state.feeds.flag || 0,
         menuX: state.feeds.menuX || 0,
         menuY: state.feeds.menuY || 0,

@@ -11,7 +11,7 @@ function mapStateToProps(state) {
         items: state.feeds.items || [],
         isFetching: state.feeds.isFetching,
         error: state.feeds.error,
-        feedsList: state.feeds.feedsList,
+        feedsList: state.feeds.feedsList || [],
         flag: state.feeds.flag || 0,
         menuX: state.feeds.menuX || 0,
         menuY: state.feeds.menuY || 0,
